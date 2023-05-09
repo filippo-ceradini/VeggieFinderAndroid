@@ -107,6 +107,7 @@ public class TakePictureActivity extends AppCompatActivity {
         imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback() {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                //TODO save Image on FireStore
                 Toast.makeText(TakePictureActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
                 byte[] imageBytes = readFileAsByteArray(photoFile);
                 if (imageBytes != null) {

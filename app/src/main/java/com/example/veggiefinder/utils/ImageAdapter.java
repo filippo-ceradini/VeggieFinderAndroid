@@ -14,8 +14,8 @@ import com.example.veggiefinder.R;
 import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHolder> {
-    private List<String> imageUrls;
-    private OnImageClickListener listener;
+    private final List<String> imageUrls;
+    private final OnImageClickListener listener;
 
     public ImageAdapter(List<String> imageUrls, OnImageClickListener listener) {
         this.imageUrls = imageUrls;
@@ -40,19 +40,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
     }
 
     public class ImageViewHolder extends RecyclerView.ViewHolder {
-        private ImageView imageView;
-        private OnImageClickListener listener;
+        private final ImageView imageView;
 
         public ImageViewHolder(@NonNull View itemView, OnImageClickListener listener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image_view);
-            this.listener = listener;
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onImageClicked(imageUrls.get(getAdapterPosition()));
-                }
-            });
+            //TODO make selected image work
+            itemView.setOnClickListener(v -> listener.onImageClicked(imageUrls.get(getAdapterPosition())));
         }
 
         public void bind(String imageUrl) {
