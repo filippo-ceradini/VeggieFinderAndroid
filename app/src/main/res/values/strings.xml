@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">VeggieFinder</string>
+    <string name="image_description">Captured image with predicted vegetable</string>
+    <string name="close">Close</string>
+    <string name="predicted_vegetable">Predicted Vegetable: %1$s</string>
+
+</resources>

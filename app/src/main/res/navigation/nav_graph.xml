@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.veggiefinder.MainFragment"
+        android:label="MainFragment"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_takePictureFragment"
+            app:destination="@id/takePictureFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_choosePictureFragment"
+            app:destination="@id/choosePictureFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/takePictureFragment"
+        android:name="com.example.veggiefinder.TakePictureActivity"
+        android:label="TakePictureFragment"
+        tools:layout="@layout/activity_take_picture" />
+
+    <fragment
+        android:id="@+id/choosePictureFragment"
+        android:name="com.example.veggiefinder.ChoosePictureActivity"
+        android:label="ChoosePictureFragment"
+        tools:layout="@layout/activity_choose_picture" />
+</navigation>

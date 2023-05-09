@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "347489184308",
+    "project_id": "veggiesinspector",
+    "storage_bucket": "veggiesinspector.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347489184308:android:1169d2dcdd7f11ac87b861",
+        "android_client_info": {
+          "package_name": "com.example.veggiefinder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347489184308-i3sc2e9s77v7eqijjfnbilok41kvlkjb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8y0uZsywzWmARD2ICuvVHMvVBdl01j6A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347489184308-i3sc2e9s77v7eqijjfnbilok41kvlkjb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
