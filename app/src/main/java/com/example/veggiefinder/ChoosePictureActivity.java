@@ -7,7 +7,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,13 +16,10 @@ import com.bumptech.glide.Glide;
 import com.example.veggiefinder.utils.FireStoreManager;
 import com.example.veggiefinder.utils.ImageAdapter;
 import com.example.veggiefinder.utils.ImageProcessor;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,17 +27,31 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class ChoosePictureActivity extends AppCompatActivity {
+public class ChoosePictureActivity extends AppCompatActivity implements ImageAdapter.OnImageSelectedListener {
 
     private RecyclerView recyclerView;
 
     private String selectedImageUrl;
+
+    @Override
+    public void onImageSelected(String imageUrl) {
+        selectedImageUrl = imageUrl;
+    }
+
+    @Override
+    public void onImageDeselected(String imageUrl) {
+        selectedImageUrl = null;
+    }
+
+
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_picture);
+
+//        FirebaseFireStore fireStore = FirebaseFireStore.getInstance();
         recyclerView = findViewById(R.id.recyclerView);
         Button selectImageButton = findViewById(R.id.select_image_button);
 
@@ -61,23 +71,20 @@ public class ChoosePictureActivity extends AppCompatActivity {
     }
 
     private void loadImagesFromFireStore() {
-        FireStoreManager.getInstance().loadImagesFromStorage(new OnSuccessListener<List<String>>() {
-            @Override
-            public void onSuccess(List<String> imageUrls) {
-                ImageAdapter adapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageClickListener() {
-                    @Override
-                    public void onImageClicked(String imageUrl) {
-                        selectedImageUrl = imageUrl;
-                    }
-                });
-                recyclerView.setAdapter(adapter);
-            }
-        }, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(ChoosePictureActivity.this, "Error loading images: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        FireStoreManager.getInstance().loadImagesFromStorage(imageUrls -> {
+            ImageAdapter adapter = new ImageAdapter(imageUrls, new ImageAdapter.OnImageSelectedListener() {
+                @Override
+                public void onImageSelected(String imageUrl) {
+                    selectedImageUrl = imageUrl;
+                }
+
+                @Override
+                public void onImageDeselected(String imageUrl) {
+                    selectedImageUrl = null;
+                }
+            });
+            recyclerView.setAdapter(adapter);
+        }, e -> Toast.makeText(ChoosePictureActivity.this, "Error loading images: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void showResultDialog(String predictedVegetable, byte[] imageBytes) {
@@ -94,7 +101,6 @@ public class ChoosePictureActivity extends AppCompatActivity {
         closeButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
-
 
     private void loadImageBytesAndProcess(String imageUrl) {
         OkHttpClient client = new OkHttpClient();

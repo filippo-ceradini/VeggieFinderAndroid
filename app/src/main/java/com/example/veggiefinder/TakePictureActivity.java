@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -30,11 +32,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.veggiefinder.utils.FireStoreManager;
 import com.example.veggiefinder.utils.ImageProcessor;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 public class TakePictureActivity extends AppCompatActivity {
     private ImageCapture imageCapture;
@@ -107,14 +115,45 @@ public class TakePictureActivity extends AppCompatActivity {
         imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this), new ImageCapture.OnImageSavedCallback() {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                //TODO save Image on FireStore
-                Toast.makeText(TakePictureActivity.this, "Image saved successfully", Toast.LENGTH_SHORT).show();
-                byte[] imageBytes = readFileAsByteArray(photoFile);
-                if (imageBytes != null) {
-                    ImageProcessor.processImage(TakePictureActivity.this, imageBytes, (predictedVegetable, imageBytes1) -> showResultDialog(predictedVegetable, imageBytes1));
+                Uri photoUri = outputFileResults.getSavedUri();
+                if (photoUri != null) {
+                    // Create a timestamp string for the image name
+                    String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+                    String imageName = "photo_" + timestamp + ".jpg";
 
+
+                    // Check if the server is reachable
+                    ImageProcessor.checkServerAvailability(isServerAvailable -> {
+                        if (!isServerAvailable) {
+                            TakePictureActivity.this.runOnUiThread(() -> Toast.makeText(TakePictureActivity.this, "Server is not reachable. Please check your connection.", Toast.LENGTH_SHORT).show());
+                            return;
+                        }
+                        // Continue with image upload and processing
+                        FireStoreManager.getInstance().uploadImage(
+                                photoUri,
+                                imageName,
+                                imageUrl -> {
+                                    // Download the image as bytes and process it
+                                    new DownloadImageTask(bytes -> {
+                                        if (bytes != null) {
+                                            ImageProcessor.processImage(TakePictureActivity.this, bytes, (predictedVegetable, imageBytes1) -> showResultDialog(predictedVegetable, imageBytes1));
+                                        } else {
+                                            Toast.makeText(TakePictureActivity.this, "Error processing image", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }).execute(imageUrl);
+                                },
+                                e -> {
+                                    // Handle the error
+                                    if (e instanceof IOException) {
+                                        Toast.makeText(TakePictureActivity.this, "Please check your network connection", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(TakePictureActivity.this, "Error uploading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                        );
+                    });
                 } else {
-                    Toast.makeText(TakePictureActivity.this, "Error processing image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TakePictureActivity.this, "Error capturing image", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -126,21 +165,41 @@ public class TakePictureActivity extends AppCompatActivity {
         });
     }
 
-    private byte[] readFileAsByteArray(File file) {
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private static class DownloadImageTask extends AsyncTask<String, Void, byte[]> {
+        private final Consumer<byte[]> listener;
+
+        public DownloadImageTask(Consumer<byte[]> listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        protected byte[] doInBackground(String... urls) {
+            String urlDisplay = urls[0];
+            byte[] imageBytes = null;
+            try {
+                InputStream in = new java.net.URL(urlDisplay).openStream();
+                imageBytes = toByteArray(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return imageBytes;
+        }
+
+        @Override
+        protected void onPostExecute(byte[] result) {
+            listener.accept(result);
+        }
+
+        private byte[] toByteArray(InputStream is) throws IOException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int read;
-            while ((read = fis.read(buffer)) != -1) {
-                bos.write(buffer, 0, read);
+            while ((read = is.read(buffer)) != -1) {
+                baos.write(buffer, 0, read);
             }
-            fis.close();
-            return bos.toByteArray();
-        } catch (IOException e) {
-            Log.e("TakePictureActivity", "Error reading file", e);
+            return baos.toByteArray();
         }
-        return null;
     }
 
 

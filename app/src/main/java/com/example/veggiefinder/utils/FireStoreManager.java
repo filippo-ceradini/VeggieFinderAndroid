@@ -1,12 +1,15 @@
 package com.example.veggiefinder.utils;
 
 import android.net.Uri;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,16 +43,16 @@ public class FireStoreManager {
         imageMap.put("imageUrl", imageUrl);
         imageMap.put("imageName", imageName);
 
+        // Image adding failed
         imageCollection.document(imageName).set(imageMap)
                 .addOnSuccessListener(unused -> {
                     // Image added successfully
                 })
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        // Image adding failed
-                    }
-                });
+                .addOnCompleteListener(Task::isSuccessful);
     }
+
+
+
 
     /**
      * Upload an image to Firebase Storage and add its metadata to FireStore

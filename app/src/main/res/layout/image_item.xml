@@ -10,8 +10,16 @@
         android:layout_width="190dp"
         android:layout_height="150dp"
         android:adjustViewBounds="true"
-        android:scaleType="centerInside"
-        android:clickable="true"
-        android:background="?attr/selectableItemBackgroundBorderless" />
+        android:scaleType="centerInside" />
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="-10dp"
+        android:buttonTint="@color/colorPrimary"
+        android:focusable="false"
+        android:text="Select" />
 
 </LinearLayout>
